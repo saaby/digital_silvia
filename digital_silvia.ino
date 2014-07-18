@@ -7,7 +7,7 @@
 #define ssrSigPin       9   // SSR relay signal
 #define ssrGndPin       8   // SSR relay ground
 #define tempSigPin      0   // Temperature sensor singal
-#define tempGndPin      6   // Temperature sensor ground 
+#define tempGndPin      6   // Temperature sensor ground
 #define tempVccPin      7   // Temperature sensor supply
 #define shotGndPin     10   // Shot switch relay Gnd (Black)
 #define shotVccPin     11   // Shot switch relay Vcc (Brown)
@@ -54,7 +54,7 @@ void setup() {
   pinMode(shotVccPin, OUTPUT);
   pinMode(shotGndPin, OUTPUT);
 
-  // Setup supply voltages 
+  // Setup supply voltages
   digitalWrite(ssrGndPin,LOW);
   digitalWrite(tempVccPin,HIGH);
   digitalWrite(tempGndPin,LOW);
@@ -64,15 +64,15 @@ void setup() {
   // PID: initialize the variables we're linked to
   pidInput = double(tempInt);
   pidSetpoint = boilerSetpoint;
-  boilerPID.SetOutputLimits(0,10000); //tell the PID to range the pidOutput from 0 to 2000 
+  boilerPID.SetOutputLimits(0,10000); //tell the PID to range the pidOutput from 0 to 10000
   boilerPID.SetSampleTime(1000);
-  pidOutput = 0; //start the pidOutput at 0% and let the PID adjust it from there
+  pidOutput = 0; //Start the pidOutput at 0% and let the PID adjust it from there
 
   // Lets initialize the processes
   boilerPID.SetMode(AUTOMATIC);
   LCD.begin(9600);
   Console.begin(9600);
-  // Wait for LCD and stuff to initialize
+  // Wait for LCD and stuff to initialize and show splash
   delay(1000);
   displaySplash(2000);
 }
@@ -83,7 +83,7 @@ void loop() {
     readTemp();
     updateConsole();
     updateLcd();
-    updatePid();      
+    updatePid();
  }
  updateRelay();
  delay(10);
@@ -99,7 +99,7 @@ void readTemp() {
 }
 
 void updatePid() {
-  // Avoid Integral windup  
+  // Avoid Integral windup
   if (tempInt < (boilerSetpoint-5))
     boilerPID.SetTunings(pidP,0,pidD);
   else if (tempInt > (boilerSetpoint+5))
@@ -118,7 +118,7 @@ void updateRelay() {
   else
     digitalWrite(ssrSigPin,LOW);
 }
-  
+
 void updateConsole() {
   Console.print(tempInt);
   Console.print("\n");
@@ -129,7 +129,7 @@ void updateLcd() {
   lcdSelectLineOne();
   if (digitalRead(shotSignalPin) == LOW) {
     if (lastShotState == HIGH) {
-      boilerPID.SetMode(AUTOMATIC);      
+      boilerPID.SetMode(AUTOMATIC);
     }
   }
   if (digitalRead(shotSignalPin) == HIGH) {
@@ -149,7 +149,7 @@ void updateLcd() {
     }
     lastShotState = HIGH;
   }
-  else if (tempInt < (boilerSetpoint-2)) { 
+  else if (tempInt < (boilerSetpoint-2)) {
     LCD.print("Heating ");
     lastShotState = LOW;
   } else if (tempInt > 105) {
@@ -176,11 +176,11 @@ void updateLcd() {
     LCD.print(" ");
   LCD.print(tempInt);
   LCD.write(223);   // Degrees symbol
-  
+
   // Print boiler power:
   lcdGoTo(26);
   LCD.print("P:");
-  if ((int(pidOutput)/100) < 10) 
+  if ((int(pidOutput)/100) < 10)
     LCD.print("  ");
   else if  ((int(pidOutput)/100) < 100)
     LCD.print(" ");
@@ -215,7 +215,7 @@ void lcdGoTo(int position) {             //position = line 1: 0-15, line 2: 16-3
     LCD.write((position+128));     //position
   } else if (position<32) {
     LCD.write(0xFE);               //command flag
-    LCD.write((position+48+128));  //position 
+    LCD.write((position+48+128));  //position
   } else {
     lcdGoTo(0);
   }
