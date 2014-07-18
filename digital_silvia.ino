@@ -29,7 +29,7 @@ int WindowSize = 10000;
 unsigned long windowStartTime;
 
 //PID: Specify the links and initial tuning parameters, last three: P,I,D
-double pidP = 400;
+double pidP = 500;
 double pidI = 3;
 double pidD = 4;
 PID boilerPID(&pidInput, &pidOutput, &pidSetpoint,pidP,0,pidD, DIRECT);
