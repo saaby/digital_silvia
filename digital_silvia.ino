@@ -25,8 +25,6 @@ boolean lastShotState = LOW;
 
 //PID: Define Variables we'll be connecting to
 double pidSetpoint, pidInput, pidOutput;
-int WindowSize = 10000;
-unsigned long windowStartTime;
 
 //PID: Specify the links and initial tuning parameters, last three: P,I,D
 double pidP = 500;
@@ -66,10 +64,9 @@ void setup() {
   // PID: initialize the variables we're linked to
   pidInput = double(tempInt);
   pidSetpoint = boilerSetpoint;
-  boilerPID.SetOutputLimits(0,WindowSize); //tell the PID to range the pidOutput from 0 to 2000 
+  boilerPID.SetOutputLimits(0,10000); //tell the PID to range the pidOutput from 0 to 2000 
   boilerPID.SetSampleTime(1000);
   pidOutput = 0; //start the pidOutput at 0% and let the PID adjust it from there
-  windowStartTime = millis();
 
   // Lets initialize the processes
   boilerPID.SetMode(AUTOMATIC);
@@ -109,24 +106,11 @@ void updatePid() {
     boilerPID.SetTunings(pidP,0,pidD);
   else
     boilerPID.SetTunings(pidP,pidI,pidD);
-
   //Update PID input
   pidInput = double(tempInt);
   //Compute PID values
   boilerPID.Compute();
 }
-
-/*
-void updateRelay() {
-  // Turn the ssrSigPin on/off based on PID pidOutput
-  unsigned long now = millis();
-  if(now - windowStartTime>(WindowSize/10))
-    windowStartTime += (WindowSize/10);
-  if((pidOutput/10) > now - windowStartTime)
-    digitalWrite(ssrSigPin,HIGH);
-  else digitalWrite(ssrSigPin,LOW);
-}
-*/
 
 void updateRelay() {
   if (i < (pidOutput/100))
