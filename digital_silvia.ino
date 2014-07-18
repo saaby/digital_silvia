@@ -222,20 +222,25 @@ void lcdGoTo(int position) {             //position = line 1: 0-15, line 2: 16-3
 }
 
 void lcdClear() {
- LCD.write(0xFE);    //command flag
+ LCD.write(0xFE);    //Command flag
  LCD.write(0x01);    //clear command.
 }
 
 void lcdBacklightOn() {    //turns on the backlight
-  LCD.write(0x7C);   //command flag for backlight stuff
+  LCD.write(0x7C);   //Command flag
   LCD.write(157);    //light level.
 }
 
 void lcdBacklightOff() {   //turns off the backlight
-  LCD.write(0x7C);   //command flag for backlight stuff
+  LCD.write(0x7C);   //Command flag
   LCD.write(128);    //light level for off.
 }
 
 void lcdSerCommand() {     //a general function to call the command flag for issuing all other commands   
   LCD.write(0xFE);
+}
+
+void lcdToggleSplash() {     //a general function to call the command flag for issuing all other commands   
+  LCD.write(0x7C);
+  LCD.write(0x09);
 }
