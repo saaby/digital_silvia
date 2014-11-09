@@ -13,7 +13,9 @@
 #define shotVccPin     11   // Shot switch relay Vcc (Brown)
 #define shotSignalPin  12   // Shot switch relay signal (Green)
 
-#define boilerSetpoint 95   // Target boilertemp
+#define boilerSetpoint 94   // Target boilertemp
+#define boilerSetpointInit 130 // Target initial boilertemp
+#define boilerSetpointInitStart 50 // Max boiler cold temp before starting init program
 
 int   tempRaw = 0;          // Raw 0-1024 input from LM35AH
 float tempFloat = 0;        // Floatingpoint temperature in celsius
@@ -75,6 +77,42 @@ void setup() {
   // Wait for LCD and stuff to initialize and show splash
   delay(1000);
   displaySplash(2000);
+  
+  // Are we initializing the boiler?
+  readTemp();
+  if (tempInt <= boilerSetpointInitStart) {
+    digitalWrite(ssrSigPin,HIGH);
+    pidOutput = 10000; // Set for printing correct printing of power output 
+    //Update display to initial message
+    lcdSelectLineOne();
+    LCD.print("Init    ");
+    lcdSelectLineTwo();
+    LCD.print("Heating ");
+    while (tempInt < boilerSetpointInit) {
+      readTemp();
+      updateConsole();
+      updateLcdTandP();
+      delay(100);
+    }
+    digitalWrite(ssrSigPin,LOW);
+    pidOutput = 0; // Set for printing correct printing of power output
+    //Update display
+    lcdSelectLineTwo();
+    LCD.print("Coasting");
+    while (tempInt > (boilerSetpoint+2)) {
+      readTemp();
+      updateConsole();
+      updateLcdTandP();
+      delay(100);
+    }
+    lcdSelectLineTwo();
+    LCD.print("Done    ");
+    delay(5000);
+    lcdSelectLineOne();
+    LCD.print("        ");
+    lcdSelectLineTwo();
+    LCD.print("        ");
+  }
 }
 
 int i=0;
@@ -84,12 +122,12 @@ void loop() {
     updateConsole();
     updateLcd();
     updatePid();
- }
- updateRelay();
- delay(10);
- i++;
- if (i == 100)
-   i=0;
+  }
+  updateRelay();
+  delay(10);
+  i++;
+  if (i == 100)
+    i=0;
 }
 
 void readTemp() {
@@ -168,7 +206,10 @@ void updateLcd() {
     LCD.print("        ");
     lastShotState = LOW;
   }
+  updateLcdTandP();
+}
 
+void updateLcdTandP() {
   // Display temperature
   lcdGoTo(10);
   LCD.print("T:");
@@ -226,21 +267,21 @@ void lcdClear() {
  LCD.write(0x01);    //clear command.
 }
 
-void lcdBacklightOn() {    //turns on the backlight
+void lcdBacklightOn() {
   LCD.write(0x7C);   //Command flag
   LCD.write(157);    //light level.
 }
 
-void lcdBacklightOff() {   //turns off the backlight
+void lcdBacklightOff() {
   LCD.write(0x7C);   //Command flag
   LCD.write(128);    //light level for off.
 }
 
-void lcdSerCommand() {     //a general function to call the command flag for issuing all other commands   
+void lcdSerCommand() {
   LCD.write(0xFE);
 }
 
-void lcdToggleSplash() {     //a general function to call the command flag for issuing all other commands   
+void lcdToggleSplash() {
   LCD.write(0x7C);
   LCD.write(0x09);
 }
